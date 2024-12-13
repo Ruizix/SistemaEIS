@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Cursos</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <h1>Gestión de Cursos</h1>
+
+    <div class="course-registration">
+        <h2>Registrar Nuevo Curso</h2>
+        <form id="courseForm">
+            <label for="courseName">Nombre del Curso:</label>
+            <input type="text" id="courseName" required>
+
+            <label for="description">Descripción:</label>
+            <textarea id="description" required></textarea>
+
+            <label for="nivelDropdown">Nivel:</label>
+            <select id="nivelDropdown" required>
+                <option value="">Selecciona...</option>
+            </select>
+
+            <label for="startDate">Fecha de Inicio:</label>
+            <input type="date" id="startDate" required>
+
+            <label for="endDate">Fecha de Fin:</label>
+            <input type="date" id="endDate" required>
+
+            <button type="submit">Registrar Curso</button>
+        </form>
+    </div>
+
+    <div class="registered-courses">
+        <h2>Cursos Registrados</h2>
+        <ul id="coursesList">
+            <!-- Lista de cursos cargada dinámicamente desde Firebase -->
+        </ul>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBYNNR6Yj64D9JRgEJgaWpqWng2UMw68fY",
+            authDomain: "sistemaescolar-31123.firebaseapp.com",
+            projectId: "sistemaescolar-31123",
+            storageBucket: "sistemaescolar-31123.firebasestorage.app",
+            messagingSenderId: "720027974481",
+            appId: "1:720027974481:web:ae4525b477120d3e01b170"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const nivelDropdown = document.getElementById("nivelDropdown");
+        const coursesList = document.getElementById("coursesList");
+        const courseForm = document.getElementById("courseForm");
+
+       // Cargar niveles desde Firebase
+const loadNiveles = async () => {
+    nivelDropdown.innerHTML = '<option value="">Selecciona...</option>';
+    try {
+        const querySnapshot = await getDocs(collection(db, "niveles"));
+        querySnapshot.forEach((doc) => {
+            const nivelData = doc.data();
+            Object.keys(nivelData).forEach((key) => {
+                const option = document.createElement("option");
+                option.value = key; // Usa el nombre del nivel como valor
+                option.textContent = key; // Usa el nombre del nivel como texto
+                nivelDropdown.appendChild(option);
+            });
+        });
+    } catch (error) {
+        console.error("Error al cargar los niveles:", error);
+        alert("Error al cargar los niveles. Revisa la conexión o configuración de Firebase.");
+    }
+};
+
+        // Registrar un nuevo curso
+        courseForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const courseName = document.getElementById("courseName").value;
+            const description = document.getElementById("description").value;
+            const nivelId = nivelDropdown.value;
+            const startDate = document.getElementById("startDate").value;
+            const endDate = document.getElementById("endDate").value;
+
+            if (!nivelId) {
+                alert("Por favor selecciona un nivel.");
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, "cursos"), {
+                    nombre: courseName,
+                    descripcion: description,
+                    idNivel: nivelId,
+                    fechaInicio: startDate,
+                    fechaFin: endDate
+                });
+                alert("Curso registrado exitosamente.");
+                courseForm.reset();
+                loadCursos();
+            } catch (error) {
+                console.error("Error al registrar el curso:", error);
+                alert("Error al registrar el curso. Inténtalo nuevamente.");
+            }
+        });
+
+        // Cargar cursos registrados
+        const loadCursos = async () => {
+            coursesList.innerHTML = "";
+            try {
+                const querySnapshot = await getDocs(collection(db, "cursos"));
+                querySnapshot.forEach((doc) => {
+                    const cursoData = doc.data();
+                    const li = document.createElement("li");
+                    li.textContent = `Nombre: ${cursoData.nombre}, Descripción: ${cursoData.descripcion}, Nivel: ${cursoData.idNivel}, Inicio: ${cursoData.fechaInicio}, Fin: ${cursoData.fechaFin}`;
+                    coursesList.appendChild(li);
+                });
+            } catch (error) {
+                console.error("Error al cargar los cursos:", error);
+                alert("Error al cargar los cursos. Revisa la conexión o configuración de Firebase.");
+            }
+        };
+
+        // Cargar niveles y cursos al cargar la página
+        document.addEventListener("DOMContentLoaded", () => {
+            loadNiveles();
+            loadCursos();
+        });
+    </script>
+</body>
+</html>

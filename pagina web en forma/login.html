@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <h1>Inicia Sesión</h1>
+    <form id="loginForm">
+        <input type="text" id="userId" placeholder="ID del Usuario" required>
+        <input type="password" id="password" placeholder="Contraseña" required>
+        <button type="submit">Iniciar Sesión</button>
+    </form>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBYNNR6Yj64D9JRgEJgaWpqWng2UMw68fY",
+            authDomain: "sistemaescolar-31123.firebaseapp.com",
+            projectId: "sistemaescolar-31123",
+            storageBucket: "sistemaescolar-31123.firebasestorage.app",
+            messagingSenderId: "720027974481",
+            appId: "1:720027974481:web:ae4525b477120d3e01b170"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.getElementById("loginForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const userId = document.getElementById("userId").value;
+            const password = document.getElementById("password").value;
+
+            const userSnapshot = await getDocs(collection(db, "usuarios"));
+            const user = userSnapshot.docs.find(doc => doc.id === userId && doc.data().password === password);
+
+            if (user) {
+                alert(`Bienvenido, ${user.data().nombreCompleto}`);
+                window.location.href = "index.html";
+            } else {
+                alert("Credenciales incorrectas");
+            }
+        });
+    </script>
+</body>
+</html>

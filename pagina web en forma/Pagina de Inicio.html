@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de Inicio</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <h1 id="welcomeMessage">Bienvenido</h1>
+
+    <nav id="userOptions">
+        <!-- Opciones dinámicas basadas en el rol del usuario -->
+    </nav>
+
+    <button id="logoutButton">Cerrar Sesión</button>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script>
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBYNNR6Yj64D9JRgEJgaWpqWng2UMw68fY",
+            authDomain: "sistemaescolar-31123.firebaseapp.com",
+            projectId: "sistemaescolar-31123",
+            storageBucket: "sistemaescolar-31123.firebasestorage.app",
+            messagingSenderId: "720027974481",
+            appId: "1:720027974481:web:ae4525b477120d3e01b170"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Obtener datos del usuario desde localStorage
+        const userId = localStorage.getItem("userId");
+        const welcomeMessage = document.getElementById("welcomeMessage");
+        const userOptions = document.getElementById("userOptions");
+
+        if (!userId) {
+            alert("Por favor inicia sesión.");
+            window.location.href = "login.html";
+        } else {
+            db.collection("usuarios").doc(userId).get().then((doc) => {
+                if (doc.exists) {
+                    const userData = doc.data();
+                    welcomeMessage.textContent = `Bienvenido, ${userData.nombreCompleto}`;
+
+                    // Generar opciones dinámicas según el rol
+                    if (userData.tipoUsuario === "administrador") {
+                        userOptions.innerHTML = `
+                            <a href="registro-usuarios.html">Registrar Usuarios</a>
+                            <a href="gestionar-grupos.html">Gestionar Grupos</a>
+                            <a href="reportes.html">Generar Reportes</a>
+                        `;
+                    } else if (userData.tipoUsuario === "maestro") {
+                        userOptions.innerHTML = `
+                            <a href="subir-calificaciones.html">Subir Calificaciones</a>
+                            <a href="consulta-alumnos.html">Consulta de Alumnos</a>
+                        `;
+                    } else if (userData.tipoUsuario === "alumno") {
+                        userOptions.innerHTML = `
+                            <a href="consulta-calificaciones.html">Consultar Calificaciones</a>
+                            <a href="registro-pagos.html">Registrar Pagos</a>
+                        `;
+                    }
+                } else {
+                    alert("Usuario no encontrado.");
+                    window.location.href = "login.html";
+                }
+            }).catch((error) => {
+                console.error("Error al obtener datos del usuario: ", error);
+                alert("Error al cargar la página.");
+            });
+        }
+
+        // Función para cerrar sesión
+        document.getElementById("logoutButton").addEventListener("click", () => {
+            localStorage.clear();
+            alert("Has cerrado sesión.");
+            window.location.href = "login.html";
+        });
+    </script>
+</body>
+</html>

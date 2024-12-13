@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Grupos</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <h1>Gestión de Grupos</h1>
+
+    <form id="formularioGrupo">
+        <label for="nombreGrupo">Nombre del Grupo:</label>
+        <input type="text" id="nombreGrupo" placeholder="Grupo A" required>
+
+        <label for="curso">Curso:</label>
+        <select id="curso">
+            <option value="">Selecciona...</option>
+        </select>
+
+        <label for="horario">Horario:</label>
+        <select id="horario">
+            <option value="">Selecciona...</option>
+        </select>
+
+        <label for="aula">Aula:</label>
+        <input type="text" id="aula" placeholder="Room 4" required>
+
+        <button type="button" id="registrarGrupo">Registrar Grupo</button>
+    </form>
+
+    <h2>Grupos Registrados</h2>
+    <ul id="listaGrupos">
+        <!-- Lista de grupos cargada dinámicamente desde Firebase -->
+    </ul>
+
+    <script type="module">
+        // Importar Firebase SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBYNNR6Yj64D9JRgEJgaWpqWng2UMw68fY",
+            authDomain: "sistemaescolar-31123.firebaseapp.com",
+            projectId: "sistemaescolar-31123",
+            storageBucket: "sistemaescolar-31123.firebasestorage.app",
+            messagingSenderId: "720027974481",
+            appId: "1:720027974481:web:ae4525b477120d3e01b170"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Cargar cursos desde Firebase
+        const cargarCursos = async () => {
+            const cursoSelect = document.getElementById("curso");
+            cursoSelect.innerHTML = '<option value="">Selecciona...</option>';
+
+            try {
+                const cursosSnapshot = await getDocs(collection(db, "cursos"));
+                cursosSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const option = document.createElement("option");
+                    option.value = doc.id; // Usar el ID del curso
+                    option.textContent = data.nombre; // Mostrar el nombre del curso
+                    cursoSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error al cargar los cursos:", error);
+            }
+        };
+
+        // Cargar horarios desde Firebase
+        const cargarHorarios = async () => {
+            const horarioSelect = document.getElementById("horario");
+            horarioSelect.innerHTML = '<option value="">Selecciona...</option>';
+
+            try {
+                const horariosSnapshot = await getDocs(collection(db, "horarios"));
+                horariosSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const option = document.createElement("option");
+                    option.value = doc.id; // Usar el ID del horario
+                    option.textContent = `${data.dia}: ${data.horaInicio} - ${data.horaFin}`; // Mostrar información del horario
+                    horarioSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error al cargar los horarios:", error);
+            }
+        };
+
+        // Registrar un nuevo grupo en Firebase
+        const registrarGrupo = async () => {
+            const nombreGrupo = document.getElementById("nombreGrupo").value;
+            const curso = document.getElementById("curso").value;
+            const horario = document.getElementById("horario").value;
+            const aula = document.getElementById("aula").value;
+
+            if (!nombreGrupo || !curso || !horario || !aula) {
+                alert("Por favor, completa todos los campos.");
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, "grupos"), {
+                    nombre: nombreGrupo,
+                    idCurso: curso,
+                    idHorario: horario,
+                    aula: aula
+                });
+                alert("Grupo registrado exitosamente.");
+                cargarGrupos(); // Actualizar lista de grupos
+            } catch (error) {
+                console.error("Error al registrar el grupo:", error);
+                alert("Error al registrar el grupo. Inténtalo nuevamente.");
+            }
+        };
+
+        // Cargar lista de grupos
+        const cargarGrupos = async () => {
+            const listaGrupos = document.getElementById("listaGrupos");
+            listaGrupos.innerHTML = ""; // Limpiar lista
+
+            try {
+                const gruposSnapshot = await getDocs(collection(db, "grupos"));
+                gruposSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const li = document.createElement("li");
+                    li.textContent = `Grupo: ${data.nombre}, Curso: ${data.idCurso}, Horario: ${data.idHorario}, Aula: ${data.aula}`;
+                    listaGrupos.appendChild(li);
+                });
+            } catch (error) {
+                console.error("Error al cargar los grupos:", error);
+            }
+        };
+
+        // Inicializar página
+        window.onload = () => {
+            cargarCursos();
+            cargarHorarios();
+            cargarGrupos();
+        };
+
+        // Evento para registrar un grupo
+        document.getElementById("registrarGrupo").addEventListener("click", registrarGrupo);
+    </script>
+</body>
+</html>

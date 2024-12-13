@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Usuarios</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <h1>Registro de Usuarios</h1>
+    <div class="form-container">
+        <form id="registroUsuarios">
+            <label for="nombreCompleto">Nombre Completo:</label>
+            <input type="text" id="nombreCompleto" placeholder="Ingresa el nombre completo" required>
+
+            <label for="correo">Correo Electrónico:</label>
+            <input type="email" id="correo" placeholder="Ingresa el correo" required>
+
+            <label for="telefono">Teléfono:</label>
+            <input type="tel" id="telefono" placeholder="Ingresa el teléfono" required>
+
+            <label for="tipoUsuario">Tipo de Usuario:</label>
+            <select id="tipoUsuario" required>
+                <option value="">Selecciona...</option>
+                <option value="interno">Interno</option>
+                <option value="externo">Externo</option>
+            </select>
+
+            <label for="idGrupo">Grupo:</label>
+            <select id="idGrupo">
+                <option value="">Selecciona...</option>
+                <!-- Opciones dinámicas desde Firebase -->
+            </select>
+
+            <label for="idCurso">Curso:</label>
+            <select id="idCurso">
+                <option value="">Selecciona...</option>
+                <!-- Opciones dinámicas desde Firebase -->
+            </select>
+
+            <label for="idNivel">Nivel:</label>
+            <select id="idNivel">
+                <option value="">Selecciona...</option>
+                <!-- Opciones dinámicas desde Firebase -->
+            </select>
+
+            <button type="submit">Registrar Usuario</button>
+        </form>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script>
+        // Configuración de Firebase
+        const firebaseConfig = {
+           apiKey: "AIzaSyBYNNR6Yj64D9JRgEJgaWpqWng2UMw68fY",
+            authDomain: "sistemaescolar-31123.firebaseapp.com",
+            projectId: "sistemaescolar-31123",
+            storageBucket: "sistemaescolar-31123.firebasestorage.app",
+            messagingSenderId: "720027974481",
+            appId: "1:720027974481:web:ae4525b477120d3e01b170""
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Obtener grupos, cursos y niveles dinámicamente
+        const loadOptions = async () => {
+            const grupoSelect = document.getElementById("idGrupo");
+            const cursoSelect = document.getElementById("idCurso");
+            const nivelSelect = document.getElementById("idNivel");
+
+            const gruposSnapshot = await db.collection("grupos").get();
+            gruposSnapshot.forEach(doc => {
+                const option = document.createElement("option");
+                option.value = doc.id;
+                option.textContent = doc.data().nombre;
+                grupoSelect.appendChild(option);
+            });
+
+            const cursosSnapshot = await db.collection("cursos").get();
+            cursosSnapshot.forEach(doc => {
+                const option = document.createElement("option");
+                option.value = doc.id;
+                option.textContent = doc.data().nombre;
+                cursoSelect.appendChild(option);
+            });
+
+            const nivelesSnapshot = await db.collection("niveles").get();
+            nivelesSnapshot.forEach(doc => {
+                const option = document.createElement("option");
+                option.value = doc.id;
+                option.textContent = doc.data().nombre;
+                nivelSelect.appendChild(option);
+            });
+        };
+
+        loadOptions();
+
+        // Registro de usuario
+        document.getElementById("registroUsuarios").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const nombreCompleto = document.getElementById("nombreCompleto").value;
+            const correo = document.getElementById("correo").value;
+            const telefono = document.getElementById("telefono").value;
+            const tipoUsuario = document.getElementById("tipoUsuario").value;
+            const idGrupo = document.getElementById("idGrupo").value;
+            const idCurso = document.getElementById("idCurso").value;
+            const idNivel = document.getElementById("idNivel").value;
+
+            // Generar ID y contraseña
+            const idUsuario = `USR${Date.now()}`;
+            const contrasenaGenerada = Math.random().toString(36).slice(-8);
+
+            try {
+                await db.collection("usuarios").doc(idUsuario).set({
+                    nombreCompleto,
+                    correo,
+                    telefono,
+                    tipoUsuario,
+                    idGrupo,
+                    idCurso,
+                    idNivel,
+                    idUsuario,
+                    contrasenaGenerada
+                });
+                alert(`Usuario registrado exitosamente.\nID: ${idUsuario}\nContraseña: ${contrasenaGenerada}`);
+                document.getElementById("registroUsuarios").reset();
+            } catch (error) {
+                console.error("Error al registrar el usuario: ", error);
+                alert("Error al registrar el usuario.");
+            }
+        });
+    </script>
+</body>
+</html>

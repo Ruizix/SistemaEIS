@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Alumnos</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <h1>Consulta de Alumnos</h1>
+
+    <div class="student-list">
+        <h2>Listado de Alumnos</h2>
+        <ul id="listaAlumnos">
+            <!-- Lista de alumnos cargada dinámicamente desde Firebase -->
+        </ul>
+    </div>
+
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+      // TODO: Add SDKs for Firebase products that you want to use
+      // https://firebase.google.com/docs/web/setup#available-libraries
+
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyBYNNR6Yj64D9JRgEJgaWpqWng2UMw68fY",
+        authDomain: "sistemaescolar-31123.firebaseapp.com",
+        projectId: "sistemaescolar-31123",
+        storageBucket: "sistemaescolar-31123.firebasestorage.app",
+        messagingSenderId: "720027974481",
+        appId: "1:720027974481:web:ae4525b477120d3e01b170"
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+    </script>
+
+    <script>
+        // Cargar lista de alumnos
+        const loadAlumnos = async () => {
+            const listaAlumnos = document.getElementById("listaAlumnos");
+            listaAlumnos.innerHTML = ""; // Limpiar lista
+
+            const db = firebase.firestore();
+            const alumnosSnapshot = await db.collection("usuarios").where("tipoUsuario", "==", "alumno").get();
+            alumnosSnapshot.forEach(doc => {
+                const data = doc.data();
+                const li = document.createElement("li");
+                li.textContent = `Nombre: ${data.nombreCompleto}, Grupo: ${data.idGrupo || "N/A"}, Curso: ${data.idCurso || "N/A"}, Nivel: ${data.idNivel || "N/A"}`;
+                listaAlumnos.appendChild(li);
+            });
+        };
+
+        loadAlumnos();
+    </script>
+</body>
+</html>

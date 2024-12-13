@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Maestros</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <h1>Consulta de Maestros</h1>
+
+    <div class="teacher-list">
+        <h2>Listado de Maestros</h2>
+        <ul id="listaMaestros">
+            <!-- Lista de maestros cargada dinámicamente desde Firebase -->
+        </ul>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script>
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBYNNR6Yj64D9JRgEJgaWpqWng2UMw68fY",
+            authDomain: "sistemaescolar-31123.firebaseapp.com",
+            projectId: "sistemaescolar-31123",
+            storageBucket: "sistemaescolar-31123.firebasestorage.app",
+            messagingSenderId: "720027974481",
+            appId: "1:720027974481:web:ae4525b477120d3e01b170"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Cargar lista de maestros
+        const loadMaestros = async () => {
+            const listaMaestros = document.getElementById("listaMaestros");
+            listaMaestros.innerHTML = ""; // Limpiar lista
+
+            const maestrosSnapshot = await db.collection("maestros").get();
+            maestrosSnapshot.forEach(doc => {
+                const li = document.createElement("li");
+                const data = doc.data();
+                li.textContent = `Nombre: ${data.nombreCompleto}, Correo: ${data.correo}, Teléfono: ${data.telefono}`;
+                listaMaestros.appendChild(li);
+            });
+        };
+
+        loadMaestros();
+    </script>
+</body>
+</html>
